@@ -7,14 +7,18 @@ from __future__ import annotations
 
 import asyncio
 import json
-import random
+import pathlib
 import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, AsyncGenerator
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+# ── Resolve dashboard directory relative to this file (works regardless of CWD)
+BASE_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
+DASHBOARD_DIR = BASE_DIR / "dashboard"
+
+from fastapi import FastAPI, HTTPException, Response, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -129,14 +133,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve dashboard static files
+# ── Serve dashboard static files using absolute paths ──────────────────────
 try:
-    app.mount("/css", StaticFiles(directory="dashboard/css"), name="css")
-    app.mount("/js", StaticFiles(directory="dashboard/js"), name="js")
-    app.mount("/static", StaticFiles(directory="dashboard"), name="static")
+    app.mount("/css",    StaticFiles(directory=str(DASHBOARD_DIR / "css")), name="css")
+    app.mount("/js",     StaticFiles(directory=str(DASHBOARD_DIR / "js")),  name="js")
+    app.mount("/static", StaticFiles(directory=str(DASHBOARD_DIR)),         name="static")
 except Exception as e:
     logger.warning("static_mount_failed", error=str(e))
-
 
 
 # ---------------------------------------------------------------------------
@@ -146,11 +149,29 @@ except Exception as e:
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the OmniFix dashboard."""
+    index_file = DASHBOARD_DIR / "index.html"
     try:
-        with open("dashboard/index.html", encoding="utf-8") as f:
-            return HTMLResponse(f.read())
+        html = index_file.read_text(encoding="utf-8")
+        return HTMLResponse(
+            content=html,
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
+            },
+        )
     except FileNotFoundError:
-        return HTMLResponse("<h1>OmniFix API Running</h1><p><a href='/docs'>API Docs →</a></p>")
+        return HTMLResponse(
+            content="<h1>OmniFix API</h1><p><a href='/docs'>API Docs →</a></p>",
+            status_code=200,
+        )
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Suppress 404 for favicon."""
+    return Response(content=b"", media_type="image/x-icon")
+
 
 
 @app.get("/health")
