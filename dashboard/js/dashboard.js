@@ -129,7 +129,7 @@ function loadPreset(presetKey) {
   if (payloadBox) payloadBox.value = data.payload;
 
   setupCustomServiceToggle();
-  addCommandLog('USER', `Loaded preset incident payload for service: ${data.service}`, 'tag-info');
+  addCommandLog('USER', `Loaded preset: ${data.service} — ${data.severity}`, 'tag-user');
 }
 
 function clearPayload() {
@@ -181,14 +181,14 @@ async function handleFormSubmit(event) {
   state.isExecuting = true;
   const btn = document.getElementById('btn-remediate');
   btn.disabled = true;
-  btn.style.opacity = '0.6';
-  btn.innerHTML = '<span>⏳ Autonomous Engine Remediating...</span>';
+  btn.style.opacity = '0.7';
+  btn.innerHTML = '<span>⏳ Remediation in Progress...</span>';
 
   document.getElementById('results-container').style.display = 'none';
   resetPipelineUI();
-  updateStatusPill('REMEDIATING...', 'var(--accent-amber)');
+  setEngineStatus('active', 'Processing');
 
-  addCommandLog('START', `Initiating Autonomous SRE Remediation for [${serviceName}] in [${env}]`, 'tag-info');
+  addCommandLog('INIT', `Initiating autonomous remediation — [${serviceName}] in [${env}]`, 'tag-info');
 
   // Try real API backend, fallback to smooth offline simulation
   try {
@@ -217,34 +217,34 @@ async function handleFormSubmit(event) {
 // ── 5-Stage Remediation Pipeline ────────────────────────────────────────
 async function runRemediationPipeline(serviceName, env, severity, payload) {
   // Stage 1: Ingestion
-  setStepState(1, 'running', 'PROCESSING');
-  addCommandLog('INGEST', `Ingested telemetry alert for ${serviceName}. Correlating metric anomalies...`, 'tag-info');
+  setStepState(1, 'running', 'Running');
+  addCommandLog('INGEST', `Telemetry alert ingested for ${serviceName} — correlating anomalies...`, 'tag-info');
   await sleep(1200);
-  setStepState(1, 'completed', 'DONE');
+  setStepState(1, 'completed', 'Done');
 
   // Stage 2: Root Cause Diagnosis
-  setStepState(2, 'running', 'DIAGNOSING');
-  addCommandLog('DIAGNOSE', `Isolating root cause: Memory leak & thread lock detected in ${serviceName}`, 'tag-warn');
+  setStepState(2, 'running', 'Running');
+  addCommandLog('DIAGNOSE', `Root cause isolated — memory leak & thread lock in ${serviceName}`, 'tag-warn');
   await sleep(1500);
-  setStepState(2, 'completed', 'DONE');
+  setStepState(2, 'completed', 'Done');
 
   // Stage 3: Hotfix Patch
-  setStepState(3, 'running', 'STAGING');
-  addCommandLog('EXECUTE', `Synthesizing container scale hotfix & clearing deadlock lock`, 'tag-exec');
+  setStepState(3, 'running', 'Running');
+  addCommandLog('PATCH', `Hotfix patch synthesized — container scale & deadlock cleared`, 'tag-exec');
   await sleep(1400);
-  setStepState(3, 'completed', 'DONE');
+  setStepState(3, 'completed', 'Done');
 
   // Stage 4: Verification
-  setStepState(4, 'running', 'VERIFYING');
-  addCommandLog('VERIFY', `Running health probe check on ${serviceName}. Latency p99 restored to 42ms.`, 'tag-success');
+  setStepState(4, 'running', 'Running');
+  addCommandLog('VERIFY', `Health probe passed on ${serviceName} — p99 latency restored to 42ms`, 'tag-success');
   await sleep(1200);
-  setStepState(4, 'completed', 'DONE');
+  setStepState(4, 'completed', 'Done');
 
   // Stage 5: Post-Mortem Report
-  setStepState(5, 'running', 'GENERATING');
-  addCommandLog('REPORT', `Generating Executive SRE Incident Post-Mortem Report...`, 'tag-info');
+  setStepState(5, 'running', 'Running');
+  addCommandLog('REPORT', `Generating executive SRE post-mortem report...`, 'tag-info');
   await sleep(1000);
-  setStepState(5, 'completed', 'DONE');
+  setStepState(5, 'completed', 'Done');
 
   // Completion
   state.isExecuting = false;
@@ -253,8 +253,9 @@ async function runRemediationPipeline(serviceName, env, severity, payload) {
   btn.style.opacity = '1';
   btn.innerHTML = '<span>⚡ Remediate Incident Now</span>';
 
+  setEngineStatus('success', 'Resolved');
   updateStatusPill('ALL SYSTEMS OPERATIONAL', 'var(--accent-green)');
-  addCommandLog('SUCCESS', `Incident on ${serviceName} fully remediated! MTTR: 94.2s. Confidence: 99.4%`, 'tag-success');
+  addCommandLog('RESOLVED', `${serviceName} fully remediated — MTTR 94.2s · Confidence 99.4%`, 'tag-success');
 
   // Update Infrastructure health status
   const infraItem = state.infraServices.find(s => s.name === serviceName);
@@ -278,7 +279,7 @@ function setStepState(stepNum, statusClass, badgeText) {
 
 function resetPipelineUI() {
   for (let i = 1; i <= 5; i++) {
-    setStepState(i, 'pending', 'WAITING');
+    setStepState(i, 'pending', 'Queued');
   }
 }
 
@@ -290,6 +291,15 @@ function updateStatusPill(text, color) {
     badge.style.color = color;
     badge.style.borderColor = color;
   }
+}
+
+function setEngineStatus(state, label) {
+  const pill = document.getElementById('remediation-status-pill');
+  const dot  = document.getElementById('engine-status-dot');
+  const txt  = document.getElementById('engine-status-text');
+  if (!pill) return;
+  pill.className = `engine-status-pill${state ? ' ' + state : ''}`;
+  if (txt) txt.textContent = label;
 }
 
 function addCommandLog(tag, msg, tagClass = 'tag-info') {

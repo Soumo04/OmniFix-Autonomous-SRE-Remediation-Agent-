@@ -91,8 +91,9 @@
                 <p class="card-subtitle">Submit service alerts, logs, or metrics for autonomous remediation</p>
               </div>
             </div>
-            <span class="status-indicator" style="background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); color: var(--accent-cyan);">
-              USER INPUT MODE
+            <span class="status-indicator mode-ready-badge">
+              <span class="badge-dot" aria-hidden="true"></span>
+              Input Ready
             </span>
           </div>
 
@@ -150,7 +151,7 @@
 
             <!-- Quick 1-Click Sample Alert Presets -->
             <div class="preset-section">
-              <div class="preset-title">⚡ Quick Load Incident Presets</div>
+              <div class="preset-title">Sample Incident Presets</div>
               <div class="preset-chips">
                 <button type="button" class="chip-btn" onclick="loadPreset('oom')">
                   <span>🚨</span> OOMKilled & Memory Leak
@@ -217,8 +218,9 @@
                 <p class="card-subtitle">Real-time incident resolution workflow status</p>
               </div>
             </div>
-            <span class="status-indicator" id="remediation-status-pill">
-              IDLE / READY
+            <span class="engine-status-pill" id="remediation-status-pill">
+              <span class="engine-status-dot" id="engine-status-dot"></span>
+              <span id="engine-status-text">Standby</span>
             </span>
           </div>
 
@@ -270,10 +272,10 @@
             </div>
           </div>
 
-          <!-- Executive Command Stream Logs (Clean, No Raw Developer Jargon) -->
+          <!-- Execution Event Stream -->
           <div class="form-label">
-            <span>Executive Command Event Stream</span>
-            <span style="font-size: 0.75rem; color: var(--text-dim);" id="log-count">0 events</span>
+            <span>Execution Event Stream</span>
+            <span class="log-count-badge" id="log-count">0 events</span>
           </div>
           <div class="log-stream-container" id="command-log-stream">
             <div class="log-entry">
