@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>OmniFix — Autonomous Multi-Agent Workflow Automation</title>
+<meta name="description" content="OmniFix: AI-powered autonomous workflow automation. Watch multi-agent systems process invoices, documents, and decisions in real-time."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<link rel="stylesheet" href="css/dashboard.css"/>
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-grid" aria-hidden="true"></div>
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+<!-- Top Navigation -->
+<header class="navbar" role="banner">
+  <div class="navbar-brand">
+    <div class="logo-icon" aria-hidden="true">⚡</div>
+    <span class="logo-text">OmniFix</span>
+    <span class="logo-badge">AUTONOMOUS</span>
+  </div>
+  <nav class="navbar-center" aria-label="Main navigation">
+    <button class="nav-tab active" id="tab-dashboard" onclick="switchTab('dashboard')" aria-selected="true">Dashboard</button>
+    <button class="nav-tab" id="tab-pipeline" onclick="switchTab('pipeline')" aria-selected="false">Pipeline</button>
+    <button class="nav-tab" id="tab-agents" onclick="switchTab('agents')" aria-selected="false">Agents</button>
+    <button class="nav-tab" id="tab-logs" onclick="switchTab('logs')" aria-selected="false">Live Logs</button>
+  </nav>
+  <div class="navbar-right">
+    <div class="status-indicator" id="conn-status" aria-live="polite">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Connecting…</span>
+    </div>
+    <button class="btn-demo" id="btn-run-demo" onclick="runDemo()" aria-label="Run invoice processing demo">
+      <span class="btn-icon">▶</span> Run Invoice Demo
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB: DASHBOARD
+═══════════════════════════════════════════════════════ -->
+<main id="view-dashboard" class="view active" role="main">
+
+  <!-- Hero Banner -->
+  <section class="hero-section" aria-label="System overview">
+    <div class="hero-content">
+      <h1 class="hero-title">Autonomous End-to-End Workflow Intelligence</h1>
+      <p class="hero-subtitle">Multi-agent AI system that identifies, decomposes, and executes complex workflows — zero manual intervention.</p>
+    </div>
+    <div class="hero-badge-row" aria-label="Technology stack">
+      <span class="tech-badge">LangGraph</span>
+      <span class="tech-badge">FastMCP</span>
+      <span class="tech-badge">Playwright</span>
+      <span class="tech-badge">EasyOCR</span>
+      <span class="tech-badge">FastAPI</span>
+      <span class="tech-badge">Redis</span>
+    </div>
+  </section>
+
+  <!-- Metrics Row -->
+  <section class="metrics-row" aria-label="System metrics">
+    <article class="metric-card" id="mc-workflows">
+      <div class="metric-icon" aria-hidden="true">🔄</div>
+      <div class="metric-value" id="m-workflows">0</div>
+      <div class="metric-label">Workflows Executed</div>
+      <div class="metric-delta positive" id="m-workflows-delta">+0 today</div>
+    </article>
+    <article class="metric-card" id="mc-success">
+      <div class="metric-icon" aria-hidden="true">✅</div>
+      <div class="metric-value" id="m-success">0%</div>
+      <div class="metric-label">Success Rate</div>
+      <div class="metric-delta" id="m-success-delta">Auto-validated</div>
+    </article>
+    <article class="metric-card" id="mc-agents">
+      <div class="metric-icon" aria-hidden="true">🤖</div>
+      <div class="metric-value" id="m-agents">4</div>
+      <div class="metric-label">Active Agents</div>
+      <div class="metric-delta positive" id="m-agents-delta">All operational</div>
+    </article>
+    <article class="metric-card" id="mc-time">
+      <div class="metric-icon" aria-hidden="true">⚡</div>
+      <div class="metric-value" id="m-time">~8s</div>
+      <div class="metric-label">Avg Processing Time</div>
+      <div class="metric-delta positive" id="m-time-delta">vs 25min manual</div>
+    </article>
+    <article class="metric-card" id="mc-confidence">
+      <div class="metric-icon" aria-hidden="true">🎯</div>
+      <div class="metric-value" id="m-confidence">—</div>
+      <div class="metric-label">Avg Confidence</div>
+      <div class="metric-delta" id="m-confidence-delta">Evidence-bound</div>
+    </article>
+    <article class="metric-card" id="mc-savings">
+      <div class="metric-icon" aria-hidden="true">💰</div>
+      <div class="metric-value" id="m-savings">95%</div>
+      <div class="metric-label">Time Saved</div>
+      <div class="metric-delta positive" id="m-savings-delta">vs manual processing</div>
+    </article>
+  </section>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-grid">
+
+    <!-- Agent Graph Panel -->
+    <section class="glass-panel panel-graph" aria-label="Agent workflow graph">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <span class="panel-icon" aria-hidden="true">🕸️</span>
+          Live Agent Workflow Graph
+        </h2>
+        <span class="panel-badge" id="graph-status">IDLE</span>
+      </div>
+      <div id="agent-graph-container" role="img" aria-label="Interactive agent workflow visualization">
+        <svg id="agent-graph" width="100%" height="100%"></svg>
+      </div>
+    </section>
+
+    <!-- Right Column -->
+    <div class="right-column">
+
+      <!-- Current Step Panel -->
+      <section class="glass-panel panel-current-step" aria-label="Current executing step">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <span class="panel-icon" aria-hidden="true">⚙️</span>
+            Current Execution
+          </h2>
+        </div>
+        <div id="current-step-display">
+          <div class="idle-state">
+            <div class="idle-icon" aria-hidden="true">💤</div>
+            <div class="idle-text">Awaiting workflow trigger…</div>
+            <div class="idle-hint">Click <strong>Run Invoice Demo</strong> to start</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Evidence Panel -->
+      <section class="glass-panel panel-evidence" aria-label="Agent evidence chain">
+        <div class="panel-header">
+          <h2 class="panel-title">
+            <span class="panel-icon" aria-hidden="true">🔍</span>
+            Evidence Chain
+          </h2>
+        </div>
+        <div id="evidence-list" class="evidence-list" aria-live="polite">
+          <div class="evidence-empty">Evidence from agent executions will appear here…</div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB: PIPELINE
+═══════════════════════════════════════════════════════ -->
+<main id="view-pipeline" class="view" role="main" aria-hidden="true">
+  <section class="pipeline-header">
+    <h2 class="section-title">Invoice Processing Pipeline</h2>
+    <p class="section-subtitle">8-step autonomous end-to-end invoice automation</p>
+  </section>
+  <div id="pipeline-steps" class="pipeline-container" role="list" aria-label="Pipeline steps">
+    <!-- Populated by JS -->
+  </div>
+  <div class="glass-panel extraction-panel" id="extraction-result" style="display:none">
+    <div class="panel-header">
+      <h2 class="panel-title"><span class="panel-icon" aria-hidden="true">📄</span> Extracted Invoice Data</h2>
+    </div>
+    <div id="extraction-data" class="extraction-grid"></div>
+  </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB: AGENTS
+═══════════════════════════════════════════════════════ -->
+<main id="view-agents" class="view" role="main" aria-hidden="true">
+  <h2 class="section-title">Specialist Agent Registry</h2>
+  <div class="agents-grid" role="list" aria-label="Agent cards">
+    <!-- Populated by JS -->
+  </div>
+</main>
+
+<!-- ═══════════════════════════════════════════════════════
+     TAB: LOGS
+═══════════════════════════════════════════════════════ -->
+<main id="view-logs" class="view" role="main" aria-hidden="true">
+  <div class="logs-header">
+    <h2 class="section-title">Live Execution Logs</h2>
+    <div class="logs-controls">
+      <button class="btn-secondary" onclick="clearLogs()" aria-label="Clear all logs">Clear</button>
+      <label class="toggle-label">
+        <input type="checkbox" id="auto-scroll" checked aria-label="Auto-scroll logs"/>
+        Auto-scroll
+      </label>
+    </div>
+  </div>
+  <div id="log-stream" class="log-stream" role="log" aria-live="polite" aria-label="Execution log stream">
+    <div class="log-entry log-info">
+      <span class="log-time">00:00:00</span>
+      <span class="log-badge info">INFO</span>
+      <span class="log-msg">OmniFix Dashboard initialized. Waiting for workflow execution…</span>
+    </div>
+  </div>
+</main>
+
+<!-- Demo Result Modal -->
+<div id="result-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Workflow result" style="display:none">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
+    <div class="modal-icon success-icon" aria-hidden="true">✅</div>
+    <h3 class="modal-title">Workflow Completed!</h3>
+    <div id="modal-body" class="modal-body"></div>
+    <button class="btn-demo" onclick="closeModal()" style="margin-top:1.5rem">View Details</button>
+  </div>
+</div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

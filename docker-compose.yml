@@ -1,0 +1,110 @@
+version: "3.9"
+
+name: omnifix
+
+services:
+
+  # ── Redis — Workflow state management ─────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: omnifix-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - omnifix-net
+
+  # ── PostgreSQL — Workflow history & analytics ──────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: omnifix-postgres
+    environment:
+      POSTGRES_USER: omnifix
+      POSTGRES_PASSWORD: omnifix
+      POSTGRES_DB: omnifix
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omnifix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - omnifix-net
+
+  # ── OmniFix API — FastAPI + LangGraph ─────────────────────
+  omnifix-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    container_name: omnifix-api
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - LOG_FORMAT=json
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+asyncpg://omnifix:omnifix@postgres:5432/omnifix
+      - LLM_PROVIDER=mock
+      - DEMO_MODE=true
+      - HITL_CONFIDENCE_THRESHOLD=0.70
+    volumes:
+      - ./dashboard:/app/dashboard:ro
+      - ./src:/app/src:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - omnifix-net
+
+  # ── OmniFix MCP — FastMCP Server ──────────────────────────
+  omnifix-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mcp
+    container_name: omnifix-mcp
+    ports:
+      - "9000:9000"
+    environment:
+      - APP_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+asyncpg://omnifix:omnifix@postgres:5432/omnifix
+      - LLM_PROVIDER=mock
+      - DEMO_MODE=true
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    networks:
+      - omnifix-net
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  omnifix-net:
+    driver: bridge
