@@ -71,6 +71,7 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3.2"
 
     # ── Agent Configuration ───────────────────────────────────────────────────
+    hitl_confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
     max_retry_attempts: int = 3
     retry_base_delay: float = 1.0  # seconds
     agent_timeout: int = 300  # seconds — SRE incidents may need longer

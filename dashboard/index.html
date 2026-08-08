@@ -1,383 +1,460 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>OmniFix — Intelligent Workflow Automation</title>
-<meta name="description" content="OmniFix automates your repetitive business tasks end-to-end using AI. Submit once, get results instantly."/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="css/dashboard.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniFix — Autonomous SRE Remediation Command Center</title>
+  <meta name="description" content="Autonomous, self-healing SRE incident remediation orchestrator. Detect, diagnose, and remediate microservice outages in real time." />
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Dashboard Design System -->
+  <link rel="stylesheet" href="css/dashboard.css" />
 </head>
 <body>
 
-<!-- Particle Canvas -->
-<canvas id="particles" aria-hidden="true"></canvas>
-<!-- Mesh gradient blobs -->
-<div class="blob blob-1" aria-hidden="true"></div>
-<div class="blob blob-2" aria-hidden="true"></div>
-<div class="blob blob-3" aria-hidden="true"></div>
+  <!-- Ambient Particle Canvas & Background Glow Blobs -->
+  <canvas id="particles" aria-hidden="true"></canvas>
+  <div class="ambient-blob blob-1" aria-hidden="true"></div>
+  <div class="ambient-blob blob-2" aria-hidden="true"></div>
+  <div class="ambient-blob blob-3" aria-hidden="true"></div>
 
-<!-- ══════════════════════════════════════════════
-     SCREEN 1: HERO / HOME
-══════════════════════════════════════════════ -->
-<div id="screen-home" class="screen active">
-  <header class="top-bar">
-    <div class="brand">
-      <span class="brand-icon">⚡</span>
-      <span class="brand-name">OmniFix</span>
-      <span class="brand-tag">AI</span>
-    </div>
-    <nav class="top-nav" aria-label="Navigation">
-      <button class="nav-link active" onclick="scrollToSection('hero')">Home</button>
-      <button class="nav-link" onclick="scrollToSection('workflows')">Workflows</button>
-      <button class="nav-link" onclick="scrollToSection('how')">How It Works</button>
+  <!-- Application Workspace Container -->
+  <div id="app-container">
+
+    <!-- ── Top Navigation Navbar ────────────────────────────────────────── -->
+    <header class="navbar" role="banner">
+      <div class="nav-brand">
+        <div class="brand-logo-icon" aria-hidden="true">⚡</div>
+        <div class="brand-text">
+          <span class="brand-title">OmniFix</span>
+          <span class="brand-subtitle">Autonomous SRE Command Center</span>
+        </div>
+      </div>
+
+      <div class="nav-metrics">
+        <div class="metric-pill" title="Mean Time to Resolution">
+          <span class="metric-label">Avg MTTR</span>
+          <span class="metric-val" id="metric-mttr">94.2s</span>
+        </div>
+        <div class="metric-pill" title="Autonomous Resolution Rate">
+          <span class="metric-label">Self-Healing</span>
+          <span class="metric-val" id="metric-healing">98.4%</span>
+        </div>
+        <div class="metric-pill" title="Cluster Health Score">
+          <span class="metric-label">System Health</span>
+          <span class="metric-val" id="metric-health">99.95%</span>
+        </div>
+        <div class="status-indicator" id="system-status-badge">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span id="status-text">ALL SYSTEMS OPERATIONAL</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Section Navigation Tabs ──────────────────────────────────────── -->
+    <nav class="nav-tabs" role="tablist" aria-label="Command Center Sections">
+      <button class="tab-btn active" id="tab-command-btn" onclick="switchTab('command')" role="tab" aria-selected="true" aria-controls="panel-command">
+        <span class="tab-icon" aria-hidden="true">⚡</span>
+        <span>Incident Command Center</span>
+      </button>
+      <button class="tab-btn" id="tab-infra-btn" onclick="switchTab('infra')" role="tab" aria-selected="false" aria-controls="panel-infra">
+        <span class="tab-icon" aria-hidden="true">🖥️</span>
+        <span>Infrastructure Cluster</span>
+      </button>
+      <button class="tab-btn" id="tab-telemetry-btn" onclick="switchTab('telemetry')" role="tab" aria-selected="false" aria-controls="panel-telemetry">
+        <span class="tab-icon" aria-hidden="true">📈</span>
+        <span>Live Telemetry Tracing</span>
+      </button>
+      <button class="tab-btn" id="tab-history-btn" onclick="switchTab('history')" role="tab" aria-selected="false" aria-controls="panel-history">
+        <span class="tab-icon" aria-hidden="true">📜</span>
+        <span>Resolution History</span>
+      </button>
     </nav>
-    <button class="btn-start" onclick="openWorkflow('invoice')" aria-label="Get started with automation">
-      Get Started →
-    </button>
-  </header>
 
-  <!-- Hero -->
-  <section class="hero" id="hero" aria-label="Hero section">
-    <div class="hero-eyebrow">
-      <span class="dot-pulse" aria-hidden="true"></span>
-      AI-Powered · End-to-End · Autonomous
-    </div>
-    <h1 class="hero-h1">
-      Stop Doing<br/>
-      <span class="gradient-text">Repetitive Work</span><br/>
-      Let AI Do It
-    </h1>
-    <p class="hero-p">
-      Enter your data once. OmniFix's multi-agent AI system automatically
-      processes, validates, decides, and delivers — in seconds, not hours.
-    </p>
-    <div class="hero-cta">
-      <button class="btn-primary" onclick="openWorkflow('invoice')" aria-label="Try invoice automation">
-        <span>Try Invoice Automation</span>
-        <span class="arrow">→</span>
-      </button>
-      <button class="btn-ghost" onclick="openWorkflow('document')" aria-label="Try document processing">
-        Process a Document
-      </button>
-    </div>
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 1: INCIDENT COMMAND CENTER (100% User Input Driven)
+         ════════════════════════════════════════════════════════════════════ -->
+    <main id="panel-command" class="screen-panel active" role="tabpanel" aria-labelledby="tab-command-btn">
+      <div class="command-grid">
 
-    <!-- Live ticker -->
-    <div class="ticker" aria-label="Live statistics">
-      <div class="ticker-item">
-        <span class="ticker-num" id="tick-1">0</span>
-        <span class="ticker-label">Tasks automated today</span>
-      </div>
-      <div class="ticker-sep" aria-hidden="true">|</div>
-      <div class="ticker-item">
-        <span class="ticker-num">95%</span>
-        <span class="ticker-label">Time saved</span>
-      </div>
-      <div class="ticker-sep" aria-hidden="true">|</div>
-      <div class="ticker-item">
-        <span class="ticker-num">98.7%</span>
-        <span class="ticker-label">Accuracy</span>
-      </div>
-      <div class="ticker-sep" aria-hidden="true">|</div>
-      <div class="ticker-item">
-        <span class="ticker-num">~8s</span>
-        <span class="ticker-label">Avg. processing time</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Workflow Cards -->
-  <section class="section" id="workflows" aria-label="Available workflows">
-    <div class="section-label">What can OmniFix automate?</div>
-    <h2 class="section-h2">Choose Your Workflow</h2>
-    <p class="section-p">Pick a workflow, enter your data, and watch the AI handle everything automatically.</p>
-
-    <div class="workflow-grid" role="list">
-
-      <article class="workflow-card" role="listitem" onclick="openWorkflow('invoice')" tabindex="0"
-               onkeydown="if(event.key==='Enter')openWorkflow('invoice')"
-               aria-label="Invoice Processing workflow">
-        <div class="wf-icon" aria-hidden="true">🧾</div>
-        <h3 class="wf-title">Invoice Processing</h3>
-        <p class="wf-desc">Enter invoice details → AI extracts, validates against POs, enters into accounting, notifies manager — all automatically.</p>
-        <div class="wf-meta">
-          <span class="wf-badge">8 Steps</span>
-          <span class="wf-badge">~8 sec</span>
-          <span class="wf-badge success">Most Popular</span>
-        </div>
-        <button class="wf-btn" aria-label="Start invoice processing">Automate Now →</button>
-      </article>
-
-      <article class="workflow-card" role="listitem" onclick="openWorkflow('document')" tabindex="0"
-               onkeydown="if(event.key==='Enter')openWorkflow('document')"
-               aria-label="Document Analysis workflow">
-        <div class="wf-icon" aria-hidden="true">📄</div>
-        <h3 class="wf-title">Document Analysis</h3>
-        <p class="wf-desc">Upload or describe a document — AI classifies it, extracts all key data, checks compliance, and routes for action.</p>
-        <div class="wf-meta">
-          <span class="wf-badge">5 Steps</span>
-          <span class="wf-badge">~5 sec</span>
-        </div>
-        <button class="wf-btn" aria-label="Start document analysis">Automate Now →</button>
-      </article>
-
-      <article class="workflow-card" role="listitem" onclick="openWorkflow('expense')" tabindex="0"
-               onkeydown="if(event.key==='Enter')openWorkflow('expense')"
-               aria-label="Expense Claim workflow">
-        <div class="wf-icon" aria-hidden="true">💰</div>
-        <h3 class="wf-title">Expense Claims</h3>
-        <p class="wf-desc">Submit expense details → AI validates receipts, applies policy rules, calculates reimbursement, files the claim.</p>
-        <div class="wf-meta">
-          <span class="wf-badge">6 Steps</span>
-          <span class="wf-badge">~6 sec</span>
-        </div>
-        <button class="wf-btn" aria-label="Start expense claim">Automate Now →</button>
-      </article>
-
-      <article class="workflow-card" role="listitem" onclick="openWorkflow('report')" tabindex="0"
-               onkeydown="if(event.key==='Enter')openWorkflow('report')"
-               aria-label="Report Generation workflow">
-        <div class="wf-icon" aria-hidden="true">📊</div>
-        <h3 class="wf-title">Report Generation</h3>
-        <p class="wf-desc">Provide raw data or metrics → AI analyses trends, generates insights, builds a formatted report, and distributes it.</p>
-        <div class="wf-meta">
-          <span class="wf-badge">4 Steps</span>
-          <span class="wf-badge">~4 sec</span>
-        </div>
-        <button class="wf-btn" aria-label="Start report generation">Automate Now →</button>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- How it works -->
-  <section class="section how-section" id="how" aria-label="How it works">
-    <div class="section-label">The Process</div>
-    <h2 class="section-h2">How OmniFix Works</h2>
-    <div class="how-steps" role="list">
-      <div class="how-step" role="listitem">
-        <div class="how-num" aria-hidden="true">01</div>
-        <div class="how-icon" aria-hidden="true">✍️</div>
-        <h3>You Enter Data</h3>
-        <p>Fill a simple form with your task details. No technical knowledge required.</p>
-      </div>
-      <div class="how-arrow" aria-hidden="true">→</div>
-      <div class="how-step" role="listitem">
-        <div class="how-num" aria-hidden="true">02</div>
-        <div class="how-icon" aria-hidden="true">🤖</div>
-        <h3>AI Does the Work</h3>
-        <p>Our intelligent agents process, validate, decide, and execute — automatically.</p>
-      </div>
-      <div class="how-arrow" aria-hidden="true">→</div>
-      <div class="how-step" role="listitem">
-        <div class="how-num" aria-hidden="true">03</div>
-        <div class="how-icon" aria-hidden="true">✅</div>
-        <h3>You Get Results</h3>
-        <p>Review the complete output, decisions made, and actions taken — in seconds.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <div class="footer-brand">⚡ OmniFix — Autonomous Workflow Intelligence</div>
-    <div class="footer-sub">Built with AI/ML · Multi-Agent System · End-to-End Automation</div>
-  </footer>
-</div>
-
-
-<!-- ══════════════════════════════════════════════
-     SCREEN 2: INPUT FORM
-══════════════════════════════════════════════ -->
-<div id="screen-input" class="screen" aria-label="Workflow input form">
-  <div class="form-page">
-    <button class="back-btn" onclick="goHome()" aria-label="Go back to home">
-      ← Back
-    </button>
-
-    <div class="form-container">
-      <!-- Left: Form -->
-      <div class="form-left">
-        <div class="form-eyebrow" id="form-eyebrow">Invoice Processing</div>
-        <h2 class="form-title" id="form-title">Enter Invoice Details</h2>
-        <p class="form-subtitle" id="form-subtitle">Fill in the fields below. Our AI will handle the rest automatically.</p>
-
-        <form id="automation-form" onsubmit="runAutomation(event)" novalidate>
-          <div id="form-fields">
-            <!-- Dynamically populated by JS -->
+        <!-- Left Column: Interactive Incident Input Console -->
+        <section class="glass-card" aria-labelledby="console-heading">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-title-icon" aria-hidden="true">🎯</div>
+              <div>
+                <h2 class="card-title" id="console-heading">Incident Trigger Console</h2>
+                <p class="card-subtitle">Submit service alerts, logs, or metrics for autonomous remediation</p>
+              </div>
+            </div>
+            <span class="status-indicator" style="background: rgba(56,189,248,0.1); border-color: rgba(56,189,248,0.3); color: var(--accent-cyan);">
+              USER INPUT MODE
+            </span>
           </div>
 
-          <div class="form-actions">
-            <button type="submit" class="btn-run" id="btn-run" aria-label="Run automation">
-              <span class="run-icon" aria-hidden="true">⚡</span>
-              <span id="btn-run-text">Run Automation</span>
+          <form id="incident-form" onsubmit="handleFormSubmit(event)">
+            
+            <!-- Target Microservice & Environment Row -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="target-service">
+                  <span>Target Microservice</span>
+                </label>
+                <select class="select-control" id="target-service" required>
+                  <option value="auth-service">auth-service (Authentication Gateway)</option>
+                  <option value="payment-gateway">payment-gateway (Billing Microservice)</option>
+                  <option value="k8s-ingress">k8s-ingress-controller (Traffic Router)</option>
+                  <option value="postgresql-primary">postgresql-primary (Database Cluster)</option>
+                  <option value="redis-cache">redis-cache-cluster (In-Memory Cache)</option>
+                  <option value="custom">Custom Service Name...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="target-env">
+                  <span>Environment</span>
+                </label>
+                <select class="select-control" id="target-env" required>
+                  <option value="production-us-east-1">Production (us-east-1)</option>
+                  <option value="production-eu-west-1">Production (eu-west-1)</option>
+                  <option value="staging">Staging (us-west-2)</option>
+                  <option value="development">Development (local)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Severity & Custom Service Name Row -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="severity-level">
+                  <span>Severity Level</span>
+                </label>
+                <select class="select-control" id="severity-level" required>
+                  <option value="P1-CRITICAL">P1 — Critical Outage (User Impacting)</option>
+                  <option value="P2-DEGRADED">P2 — High Degradation (Latency Surge)</option>
+                  <option value="P3-WARNING">P3 — Non-Blocking Anomaly</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="custom-service-group" style="display: none;">
+                <label class="form-label" for="custom-service-input">
+                  <span>Custom Service Identifier</span>
+                </label>
+                <input type="text" class="input-control" id="custom-service-input" placeholder="e.g. inventory-service-v2" />
+              </div>
+            </div>
+
+            <!-- Quick 1-Click Sample Alert Presets -->
+            <div class="preset-section">
+              <div class="preset-title">⚡ Quick Load Incident Presets</div>
+              <div class="preset-chips">
+                <button type="button" class="chip-btn" onclick="loadPreset('oom')">
+                  <span>🚨</span> OOMKilled & Memory Leak
+                </button>
+                <button type="button" class="chip-btn" onclick="loadPreset('dbpool')">
+                  <span>⚡</span> DB Pool Exhaustion
+                </button>
+                <button type="button" class="chip-btn" onclick="loadPreset('latency')">
+                  <span>🌐</span> API 504 Latency Surge
+                </button>
+                <button type="button" class="chip-btn" onclick="loadPreset('disk')">
+                  <span>💾</span> Disk Space 98% Full
+                </button>
+              </div>
+            </div>
+
+            <!-- Incident Payload / Log Input Box -->
+            <div class="form-group">
+              <label class="form-label" for="incident-payload">
+                <span>Incident Log Snippet / Alert Payload</span>
+                <span style="font-size: 0.75rem; color: var(--accent-cyan); cursor: pointer;" onclick="clearPayload()">Clear Text</span>
+              </label>
+              <textarea class="textarea-control" id="incident-payload" placeholder="Paste error stack trace, Prometheus alert JSON, or incident description here..." required></textarea>
+            </div>
+
+            <!-- Remediation Strategy Mode Selection -->
+            <div class="form-group">
+              <label class="form-label">
+                <span>Remediation Mode</span>
+              </label>
+              <div class="mode-selector">
+                <div class="mode-card selected" id="mode-auto" onclick="selectMode('auto')">
+                  <div class="mode-header">
+                    <span aria-hidden="true">🤖</span>
+                    <span>Full Autonomous</span>
+                  </div>
+                  <div class="mode-desc">Zero-touch automatic root cause resolution & container patch deployment</div>
+                </div>
+
+                <div class="mode-card" id="mode-hitl" onclick="selectMode('hitl')">
+                  <div class="mode-header">
+                    <span aria-hidden="true">👨‍💻</span>
+                    <span>Human Approval</span>
+                  </div>
+                  <div class="mode-desc">Stages remediation patch & pauses for SRE engineer explicit confirmation</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <button type="submit" class="btn-primary" id="btn-remediate">
+              <span>⚡ Remediate Incident Now</span>
             </button>
-            <button type="button" class="btn-sample" onclick="fillSampleData()" aria-label="Fill with sample data">
-              Use Sample Data
-            </button>
+          </form>
+        </section>
+
+        <!-- Right Column: Real-Time Remediation Progress Pipeline & Command Logs -->
+        <section class="glass-card" aria-labelledby="execution-heading">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-title-icon" aria-hidden="true">⚙️</div>
+              <div>
+                <h2 class="card-title" id="execution-heading">Autonomous Remediation Engine</h2>
+                <p class="card-subtitle">Real-time incident resolution workflow status</p>
+              </div>
+            </div>
+            <span class="status-indicator" id="remediation-status-pill">
+              IDLE / READY
+            </span>
           </div>
-        </form>
+
+          <!-- 5-Stage Remediation Progress Pipeline Timeline -->
+          <div class="pipeline-container">
+            <div class="pipeline-step pending" id="step-1">
+              <div class="step-num">1</div>
+              <div class="step-info">
+                <div class="step-name">Telemetry Alert Ingestion</div>
+                <div class="step-detail">Parsing alert payload & verifying metrics correlation</div>
+              </div>
+              <div class="step-badge" id="step-1-badge">WAITING</div>
+            </div>
+
+            <div class="pipeline-step pending" id="step-2">
+              <div class="step-num">2</div>
+              <div class="step-info">
+                <div class="step-name">Root Cause Diagnosis</div>
+                <div class="step-detail">Analyzing dependency graph & isolating faulty component</div>
+              </div>
+              <div class="step-badge" id="step-2-badge">WAITING</div>
+            </div>
+
+            <div class="pipeline-step pending" id="step-3">
+              <div class="step-num">3</div>
+              <div class="step-info">
+                <div class="step-name">Hotfix Patch Generation</div>
+                <div class="step-detail">Synthesizing container scale & config hotfix patch</div>
+              </div>
+              <div class="step-badge" id="step-3-badge">WAITING</div>
+            </div>
+
+            <div class="pipeline-step pending" id="step-4">
+              <div class="step-num">4</div>
+              <div class="step-info">
+                <div class="step-name">Staged Remediation & Verification</div>
+                <div class="step-detail">Deploying hotfix & conducting regression health check</div>
+              </div>
+              <div class="step-badge" id="step-4-badge">WAITING</div>
+            </div>
+
+            <div class="pipeline-step pending" id="step-5">
+              <div class="step-num">5</div>
+              <div class="step-info">
+                <div class="step-name">Post-Mortem & Incident Report</div>
+                <div class="step-detail">Generating executive SRE incident post-mortem runbook</div>
+              </div>
+              <div class="step-badge" id="step-5-badge">WAITING</div>
+            </div>
+          </div>
+
+          <!-- Executive Command Stream Logs (Clean, No Raw Developer Jargon) -->
+          <div class="form-label">
+            <span>Executive Command Event Stream</span>
+            <span style="font-size: 0.75rem; color: var(--text-dim);" id="log-count">0 events</span>
+          </div>
+          <div class="log-stream-container" id="command-log-stream">
+            <div class="log-entry">
+              <span class="log-time">00:00:00</span>
+              <span class="log-tag tag-info">SYSTEM</span>
+              <span class="log-msg">OmniFix Autonomous SRE Engine ready. Submit an incident above to begin.</span>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <!-- Right: Preview / Info -->
-      <div class="form-right">
-        <div class="form-info-card">
-          <div class="fi-title" id="fi-title">What will happen?</div>
-          <ol class="fi-steps" id="fi-steps" aria-label="Automation steps">
-            <!-- Dynamically populated -->
-          </ol>
-          <div class="fi-note">
-            <span aria-hidden="true">🔒</span> Your data is processed securely and never stored beyond this session.
+      <!-- Bottom Container: Interactive Results & Post-Mortem Dashboard (Revealed on Completion) -->
+      <section class="glass-card" id="results-container" style="margin-top: 24px; display: none;" aria-labelledby="results-heading">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-title-icon" aria-hidden="true">🎉</div>
+            <div>
+              <h2 class="card-title" id="results-heading">Incident Resolution Summary</h2>
+              <p class="card-subtitle">Root cause analysis, recovery metrics, and post-mortem report</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn-secondary" onclick="copyPostMortem()">📋 Copy Post-Mortem</button>
+            <button type="button" class="btn-secondary" onclick="downloadPostMortem()">💾 Download Report</button>
           </div>
         </div>
-        <div class="form-stats-row">
-          <div class="form-stat">
-            <div class="form-stat-val">~8s</div>
-            <div class="form-stat-lbl">Processing time</div>
+
+        <!-- Metric Comparison Grid -->
+        <div class="metrics-comparison-grid">
+          <div class="metric-card">
+            <div class="metric-card-title">Average Latency p99</div>
+            <div class="metric-card-values">
+              <span class="before-val" id="res-lat-before">1850ms</span>
+              <span class="after-val" id="res-lat-after">42ms</span>
+              <span class="delta-badge">-97.7%</span>
+            </div>
           </div>
-          <div class="form-stat">
-            <div class="form-stat-val">8</div>
-            <div class="form-stat-lbl">AI steps</div>
+
+          <div class="metric-card">
+            <div class="metric-card-title">HTTP Error Rate</div>
+            <div class="metric-card-values">
+              <span class="before-val" id="res-err-before">48.5%</span>
+              <span class="after-val" id="res-err-after">0.0%</span>
+              <span class="delta-badge">-100%</span>
+            </div>
           </div>
-          <div class="form-stat">
-            <div class="form-stat-val">98.7%</div>
-            <div class="form-stat-lbl">Accuracy</div>
+
+          <div class="metric-card">
+            <div class="metric-card-title">System Confidence Score</div>
+            <div class="metric-card-values">
+              <span class="before-val" style="text-decoration: none; color: var(--text-dim);">Initial: 0%</span>
+              <span class="after-val" id="res-confidence">99.4%</span>
+              <span class="delta-badge" style="background: rgba(56,189,248,0.15); color: var(--accent-cyan);">HIGH</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post-Mortem Report Document Box -->
+        <div class="form-label">
+          <span>Executive SRE Post-Mortem Incident Report</span>
+        </div>
+        <div class="postmortem-box" id="postmortem-content">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+    </main>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 2: INFRASTRUCTURE CLUSTER
+         ════════════════════════════════════════════════════════════════════ -->
+    <section id="panel-infra" class="screen-panel" role="tabpanel" aria-labelledby="tab-infra-btn">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-title-icon" aria-hidden="true">🖥️</div>
+            <div>
+              <h2 class="card-title">Infrastructure Services & Node Health</h2>
+              <p class="card-subtitle">Real-time status of monitored microservices and Kubernetes pods</p>
+            </div>
+          </div>
+          <button type="button" class="btn-secondary" onclick="refreshInfraHealth()">🔄 Refresh Status</button>
+        </div>
+
+        <div class="infra-grid" id="infra-cards-container">
+          <!-- Dynamic Service Cards Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 3: LIVE TELEMETRY TRACING
+         ════════════════════════════════════════════════════════════════════ -->
+    <section id="panel-telemetry" class="screen-panel" role="tabpanel" aria-labelledby="tab-telemetry-btn">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-title-icon" aria-hidden="true">📈</div>
+            <div>
+              <h2 class="card-title">Cluster Telemetry & Anomaly Tracing</h2>
+              <p class="card-subtitle">Real-time throughput, latency distribution, and error rate telemetry</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- SVG Telemetry Graph 1 -->
+          <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div class="card-title" style="font-size: 0.95rem; margin-bottom: 12px;">HTTP Request Latency (p95 & p99)</div>
+            <svg viewBox="0 0 500 200" style="width: 100%; height: auto;">
+              <defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line x1="40" y1="20" x2="40" y2="170" stroke="#334155" stroke-width="1"/>
+              <line x1="40" y1="170" x2="480" y2="170" stroke="#334155" stroke-width="1"/>
+              <path d="M40 140 Q 120 130, 180 150 T 300 40 T 400 160 T 480 165 L 480 170 L 40 170 Z" fill="url(#grad1)"/>
+              <path d="M40 140 Q 120 130, 180 150 T 300 40 T 400 160 T 480 165" fill="none" stroke="#38bdf8" stroke-width="3"/>
+            </svg>
+          </div>
+
+          <!-- SVG Telemetry Graph 2 -->
+          <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div class="card-title" style="font-size: 0.95rem; margin-bottom: 12px;">Autonomous Self-Healing Triggers per Hour</div>
+            <svg viewBox="0 0 500 200" style="width: 100%; height: auto;">
+              <defs>
+                <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line x1="40" y1="20" x2="40" y2="170" stroke="#334155" stroke-width="1"/>
+              <line x1="40" y1="170" x2="480" y2="170" stroke="#334155" stroke-width="1"/>
+              <path d="M40 160 Q 100 150, 160 110 T 260 70 T 380 30 T 480 20 L 480 170 L 40 170 Z" fill="url(#grad2)"/>
+              <path d="M40 160 Q 100 150, 160 110 T 260 70 T 380 30 T 480 20" fill="none" stroke="#a855f7" stroke-width="3"/>
+            </svg>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         TAB 4: RESOLUTION HISTORY
+         ════════════════════════════════════════════════════════════════════ -->
+    <section id="panel-history" class="screen-panel" role="tabpanel" aria-labelledby="tab-history-btn">
+      <div class="glass-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-title-icon" aria-hidden="true">📜</div>
+            <div>
+              <h2 class="card-title">Autonomous Resolution Log</h2>
+              <p class="card-subtitle">Complete historical record of self-healing incidents and MTTR metrics</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Incident ID</th>
+                <th>Service Name</th>
+                <th>Root Cause Summary</th>
+                <th>Remediation Action</th>
+                <th>MTTR</th>
+                <th>Confidence</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </div>
-</div>
 
-
-<!-- ══════════════════════════════════════════════
-     SCREEN 3: PROCESSING
-══════════════════════════════════════════════ -->
-<div id="screen-processing" class="screen" aria-live="polite" aria-label="Processing workflow">
-  <div class="processing-page">
-    <div class="proc-brain" aria-hidden="true">
-      <div class="brain-ring r1"></div>
-      <div class="brain-ring r2"></div>
-      <div class="brain-ring r3"></div>
-      <div class="brain-core">🤖</div>
-    </div>
-
-    <h2 class="proc-title">AI is working…</h2>
-    <p class="proc-subtitle" id="proc-subtitle">Initialising agents</p>
-
-    <!-- Step pipeline -->
-    <div class="proc-pipeline" id="proc-pipeline" role="list" aria-label="Processing steps">
-      <!-- Populated by JS -->
-    </div>
-
-    <!-- Overall progress bar -->
-    <div class="proc-progress-wrap" aria-label="Overall progress">
-      <div class="proc-progress-bar">
-        <div class="proc-progress-fill" id="proc-fill" style="width:0%"></div>
-      </div>
-      <div class="proc-progress-label">
-        <span id="proc-pct">0%</span> complete
-      </div>
-    </div>
-
-    <div class="proc-log" id="proc-log" role="log" aria-label="Processing log">
-      <div class="proc-log-entry">Initialising intelligent agents…</div>
-    </div>
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════════
-     SCREEN 4: RESULTS
-══════════════════════════════════════════════ -->
-<div id="screen-results" class="screen" aria-label="Automation results">
-  <div class="results-page">
-    <div class="results-header">
-      <div class="results-check" aria-hidden="true">✅</div>
-      <h2 class="results-title">Automation Complete!</h2>
-      <p class="results-subtitle" id="results-subtitle">All steps completed successfully in <strong id="results-time">—</strong></p>
-      <div class="results-actions">
-        <button class="btn-primary" onclick="goHome()" aria-label="Process another task">Process Another Task</button>
-        <button class="btn-ghost" onclick="downloadResults()" aria-label="Download report">⬇ Download Report</button>
-      </div>
-    </div>
-
-    <!-- Summary cards row -->
-    <div class="summary-cards" id="summary-cards" aria-label="Result summary">
-      <!-- Populated by JS -->
-    </div>
-
-    <!-- Main results grid -->
-    <div class="results-grid">
-
-      <!-- Extracted Data -->
-      <section class="result-panel" aria-label="Extracted data">
-        <div class="rp-header">
-          <span class="rp-icon" aria-hidden="true">📋</span>
-          <h3 class="rp-title">Extracted Data</h3>
-          <span class="rp-badge success">Verified</span>
-        </div>
-        <div class="rp-body" id="rp-extracted">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-
-      <!-- AI Decisions -->
-      <section class="result-panel" aria-label="AI decisions">
-        <div class="rp-header">
-          <span class="rp-icon" aria-hidden="true">🎯</span>
-          <h3 class="rp-title">AI Decisions</h3>
-          <span class="rp-badge" id="decision-badge">Approved</span>
-        </div>
-        <div class="rp-body" id="rp-decisions">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-
-      <!-- Actions Taken -->
-      <section class="result-panel" aria-label="Actions taken">
-        <div class="rp-header">
-          <span class="rp-icon" aria-hidden="true">⚡</span>
-          <h3 class="rp-title">Actions Taken</h3>
-          <span class="rp-badge success">8 Completed</span>
-        </div>
-        <div class="rp-body" id="rp-actions">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-
-      <!-- Confidence Report -->
-      <section class="result-panel" aria-label="Confidence report">
-        <div class="rp-header">
-          <span class="rp-icon" aria-hidden="true">📊</span>
-          <h3 class="rp-title">Confidence Report</h3>
-          <span class="rp-badge success">High Confidence</span>
-        </div>
-        <div class="rp-body" id="rp-confidence">
-          <!-- Populated by JS -->
-        </div>
-      </section>
-    </div>
-
-    <!-- Time saved callout -->
-    <div class="time-saved-callout" aria-label="Time saved">
-      <div class="ts-left">
-        <div class="ts-big">95%</div>
-        <div class="ts-label">Time Saved</div>
-      </div>
-      <div class="ts-right">
-        <div class="ts-compare">
-          <span class="ts-item manual">👤 Manually: ~25 minutes</span>
-          <span class="ts-item auto" id="ts-auto">⚡ OmniFix: ~8 seconds</span>
-        </div>
-        <p class="ts-note">That's the equivalent of freeing up an employee for 25 minutes — per invoice. Scale that across hundreds of invoices per day.</p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<script src="js/dashboard.js"></script>
+  <!-- JavaScript Logic -->
+  <script src="js/dashboard.js"></script>
 </body>
 </html>
