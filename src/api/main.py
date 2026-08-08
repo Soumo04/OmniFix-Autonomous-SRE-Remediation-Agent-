@@ -131,9 +131,12 @@ app.add_middleware(
 
 # Serve dashboard static files
 try:
+    app.mount("/css", StaticFiles(directory="dashboard/css"), name="css")
+    app.mount("/js", StaticFiles(directory="dashboard/js"), name="js")
     app.mount("/static", StaticFiles(directory="dashboard"), name="static")
-except Exception:
-    pass
+except Exception as e:
+    logger.warning("static_mount_failed", error=str(e))
+
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 """
-OmniFix Core Configuration
-Pydantic-settings based config with environment variable support.
+OmniFix — Core Configuration
+SRE Orchestrator edition: three MCP server topology + MRTR secret key.
 """
 
 from __future__ import annotations
@@ -35,16 +35,32 @@ class Settings(BaseSettings):
 
     # ── Application ──────────────────────────────────────────────────────────
     app_name: str = "OmniFix"
-    app_version: str = "1.0.0"
+    app_version: str = "2.0.0"
     app_env: AppEnvironment = AppEnvironment.DEVELOPMENT
     debug: bool = True
     secret_key: str = "omnifix-dev-secret-change-in-prod"
 
-    # ── Server ────────────────────────────────────────────────────────────────
+    # ── Main API Server ────────────────────────────────────────────────────────
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    mcp_host: str = "0.0.0.0"
-    mcp_port: int = 9000
+
+    # ── MCP Server Topology (Stateless ASGI-native micro-servers) ──────────────
+    # Telemetry MCP — read-only log & metric tracing (Port 8001)
+    telemetry_mcp_host: str = "0.0.0.0"
+    telemetry_mcp_port: int = 8001
+
+    # GitOps MCP — code inspection + hotfix PR staging (Port 8002)
+    gitops_mcp_host: str = "0.0.0.0"
+    gitops_mcp_port: int = 8002
+
+    # InfraOps MCP — container runtime management (Port 8003)
+    infraops_mcp_host: str = "0.0.0.0"
+    infraops_mcp_port: int = 8003
+
+    # ── Multi-Round-Trip Request (MRTR) Security ───────────────────────────────
+    # Static shared key ensures MRTR state survives across multi-worker deployments.
+    # MUST be changed to a secret random value in production.
+    mrtr_secret_key: str = "omnifix-mrtr-static-key-change-in-prod"
 
     # ── LLM Provider ─────────────────────────────────────────────────────────
     llm_provider: LLMProvider = LLMProvider.MOCK
@@ -54,43 +70,22 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
 
-    # ── Redis ─────────────────────────────────────────────────────────────────
-    redis_url: str = "redis://localhost:6379/0"
-    redis_prefix: str = "omnifix:"
-    redis_ttl: int = 3600  # seconds
-
-    # ── Database ──────────────────────────────────────────────────────────────
-    database_url: str = "sqlite+aiosqlite:///./omnifix.db"
-
     # ── Agent Configuration ───────────────────────────────────────────────────
-    hitl_confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0)
     max_retry_attempts: int = 3
     retry_base_delay: float = 1.0  # seconds
-    agent_timeout: int = 120  # seconds
-
-    # ── External Integrations ─────────────────────────────────────────────────
-    gmail_client_id: Optional[str] = None
-    gmail_client_secret: Optional[str] = None
-    slack_bot_token: Optional[str] = None
-    notion_token: Optional[str] = None
-    github_token: Optional[str] = None
+    agent_timeout: int = 300  # seconds — SRE incidents may need longer
 
     # ── Feature Flags ─────────────────────────────────────────────────────────
-    enable_playwright: bool = False
-    enable_ocr: bool = False
-    enable_real_email: bool = False
-    demo_mode: bool = True
+    demo_mode: bool = True  # Produces realistic simulated MCP tool outputs
+    enable_real_docker: bool = False  # If True, calls real Docker socket
+    enable_real_github: bool = False  # If True, calls real GitHub API
+    github_token: Optional[str] = None
 
     # ── Logging ───────────────────────────────────────────────────────────────
+    # CRITICAL: All MCP server logs must go to stderr, never stdout.
+    # Stdout corruption will crash the JSON-RPC stream.
     log_level: str = "INFO"
     log_format: str = "json"  # json | console
-
-    @field_validator("hitl_confidence_threshold")
-    @classmethod
-    def validate_threshold(cls, v: float) -> float:
-        if not 0.0 <= v <= 1.0:
-            raise ValueError("HITL threshold must be between 0.0 and 1.0")
-        return v
 
     @property
     def is_production(self) -> bool:
@@ -99,10 +94,6 @@ class Settings(BaseSettings):
     @property
     def use_real_llm(self) -> bool:
         return self.llm_provider != LLMProvider.MOCK
-
-    @property
-    def redis_enabled(self) -> bool:
-        return not self.redis_url.startswith("memory://")
 
 
 # Global singleton

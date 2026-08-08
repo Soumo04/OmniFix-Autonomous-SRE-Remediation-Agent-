@@ -136,30 +136,49 @@ class DocProcessorAgent(BaseAgent):
         return await self._simulate_ocr_extraction(step_name, state)
 
     async def _simulate_ocr_extraction(self, step_name: str, state: WorkflowState) -> AgentResult:
-        await asyncio.sleep(random.uniform(0.8, 2.0))
+        await asyncio.sleep(random.uniform(0.8, 1.8))
 
-        # Simulate realistic invoice extraction
+        # Retrieve user input from task_metadata or intermediate_outputs
+        meta = dict(state.get("task_metadata", {}))
+        intermediate_in = dict(state.get("intermediate_outputs", {}))
+
+        vendor = meta.get("vendor_name") or intermediate_in.get("vendor_name") or "TechSupply Corp Ltd"
+        inv_num = meta.get("invoice_number") or intermediate_in.get("invoice_number") or f"INV-{random.randint(10000, 99999)}"
+        inv_date = meta.get("invoice_date") or intermediate_in.get("invoice_date") or "2026-08-01"
+        due_date = meta.get("due_date") or intermediate_in.get("due_date") or "2026-08-31"
+        po_ref = meta.get("po_reference") or intermediate_in.get("po_reference") or f"PO-{random.randint(1000, 9999)}"
+        currency = meta.get("currency") or intermediate_in.get("currency") or "USD"
+
+        # Line items handling
+        line_items = meta.get("line_items") or intermediate_in.get("line_items") or [
+            {"description": "Cloud Server License Q3", "qty": 5, "unit_price": 1200.00, "total": 6000.00},
+            {"description": "Support & Maintenance", "qty": 1, "unit_price": 800.00, "total": 800.00},
+            {"description": "Professional Services", "qty": 3, "unit_price": 500.00, "total": 1500.00},
+        ]
+
+        subtotal = float(meta.get("subtotal") or intermediate_in.get("subtotal") or sum(item.get("total", item.get("qty", 1)*item.get("unit_price", 0)) for item in line_items))
+        raw_tax = float(meta.get("tax_rate") or intermediate_in.get("tax_rate") or 18)
+        tax_rate = raw_tax / 100 if raw_tax > 1 else raw_tax
+        tax_amount = float(meta.get("tax") or intermediate_in.get("tax_amount") or (subtotal * tax_rate))
+        total_amount = float(meta.get("total") or intermediate_in.get("total_amount") or (subtotal + tax_amount))
+
         extracted = {
             "document_type": "invoice",
-            "vendor_name": "TechSupply Corp Ltd",
+            "vendor_name": vendor,
             "vendor_tax_id": "GST-29ABCDE1234F1Z5",
-            "invoice_number": f"INV-{random.randint(10000, 99999)}",
-            "invoice_date": "2026-08-01",
-            "due_date": "2026-08-31",
-            "po_reference": f"PO-{random.randint(1000, 9999)}",
-            "line_items": [
-                {"description": "Cloud Server License Q3", "qty": 5, "unit_price": 1200.00, "total": 6000.00},
-                {"description": "Support & Maintenance", "qty": 1, "unit_price": 800.00, "total": 800.00},
-                {"description": "Professional Services", "qty": 3, "unit_price": 500.00, "total": 1500.00},
-            ],
-            "subtotal": 8300.00,
-            "tax_rate": 0.18,
-            "tax_amount": 1494.00,
-            "total_amount": 9794.00,
-            "currency": "USD",
+            "invoice_number": inv_num,
+            "invoice_date": inv_date,
+            "due_date": due_date,
+            "po_reference": po_ref,
+            "line_items": line_items,
+            "subtotal": round(subtotal, 2),
+            "tax_rate": tax_rate,
+            "tax_amount": round(tax_amount, 2),
+            "total_amount": round(total_amount, 2),
+            "currency": currency,
             "payment_method": "Bank Transfer",
             "bank_account": "****4521",
-            "ocr_confidence": round(random.uniform(0.94, 0.99), 3),
+            "ocr_confidence": round(random.uniform(0.95, 0.99), 3),
             "pages_processed": 2,
         }
 

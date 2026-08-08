@@ -85,6 +85,14 @@ async def validator_node(state: WorkflowState) -> WorkflowState:
     if result.success:
         updated_state["validation_passed"] = result.output.get("validation_passed", False)
         updated_state["overall_confidence"] = result.output.get("overall_quality_score", 0)
+        
+        # Determine final status
+        if updated_state["validation_passed"]:
+            updated_state["status"] = WorkflowStatus.COMPLETED
+        elif updated_state.get("hitl_required"):
+            updated_state["status"] = WorkflowStatus.AWAITING_HUMAN
+        elif updated_state.get("recovery_attempts", 0) >= settings.max_retry_attempts:
+            updated_state["status"] = WorkflowStatus.FAILED
 
     return updated_state
 
@@ -153,7 +161,6 @@ def route_after_validator(state: WorkflowState) -> Literal["executor", "__end__"
         # Re-run from failed steps
         return "executor"
 
-    state["status"] = WorkflowStatus.COMPLETED
     return "__end__"
 
 
@@ -162,7 +169,6 @@ def route_after_recovery(state: WorkflowState) -> Literal["executor", "__end__"]
     if state.get("healed") and state.get("recovery_attempts", 0) <= settings.max_retry_attempts:
         return "executor"
 
-    state["status"] = WorkflowStatus.AWAITING_HUMAN if state.get("hitl_required") else WorkflowStatus.FAILED
     return "__end__"
 
 
